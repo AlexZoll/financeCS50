@@ -108,7 +108,23 @@ def logout():
 @login_required
 def quote():
     """Get stock quote."""
-    return apology("TODO")
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # Send request to the iexpis.com to get quote
+        quote = lookup(request.form.get("symbol"))
+
+        #Ensure response exists
+        if quote == None:
+            return apology("Invalid symbol", 403)
+
+        # render response
+        return render_template("quoted.html", quote=quote)
+
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("quote.html")
 
 
 @app.route("/register", methods=["GET", "POST"])
