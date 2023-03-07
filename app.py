@@ -98,7 +98,7 @@ def buy():
         db.execute("UPDATE users SET cash = ? WHERE id = ?", cash[0]["cash"] - totalPrice, session.get("user_id"))
 
         # Add note in history
-        db.execute("INSERT INTO history (symbolid, shares, price, userid) VALUES (?, ?, ?, ?)", checkSymbol["id"], int(request.form.get("shares")), session.get("user_id"))
+        db.execute("INSERT INTO history (symbolid, shares, price, userid) VALUES (?, ?, ?, ?)", checkSymbol[0]["id"], str("+" + request.form.get("shares")), quote["price"], session.get("user_id"))
 
         # Redirect user to home page
         flash("You've successfully purchased!")
