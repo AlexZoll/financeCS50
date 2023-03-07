@@ -77,12 +77,15 @@ def buy():
             return apology("You dont have enough cash", 403)
 
         # Check stock symbol and ammount of shares
-        checkStock = db.execute("SELECT shares FROM stocks WHERE symbolid IN (SELECT id FROM companies WHERE symbol = ?, quote["symbol"]) AND id = ?", session.get("user_id"))
+        checkSymbol = db.execute("SELECT id FROM companies WHERE symbol = ?", quote["symbol"])
+        checkStock = db.execute("SELECT shares FROM stocks WHERE symbolid = ? AND userid = ?", checkSymbol[0]["id"], session.get("user_id"))
 
         # Add shares to the users stock or create new position if it doesnt exist
-        if len(checkStock) == 1 and checkStock[0]["symbol"] == quote["symbol"]:
-            db.execute("UPDATE stocks SET shares = ? WHERE userid = ? AND symbol = ?", int(request.form.get("shares")) + checkStock[0]["shares"], session.get("user_id"), quote["symbol"])
-        else:
+        if len(checkSymbol) == 1:
+            if len(checkStock) == 1:
+                db.execute("UPDATE stocks SET shares = ? WHERE userid = ? AND symbolid = ?", int(
+                    request.form.get("shares")) + checkStock[0]["shares"], session.get("user_id"), checkSymbol[0["id"]])
+            else:
             db.execute("INSERT INTO stocks (symbol, shares, userid) VALUES (?, ?, ?)", quote["symbol"], int(request.form.get("shares")), session.get("user_id"))
 
         # Debit a cash account
