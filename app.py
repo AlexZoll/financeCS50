@@ -42,7 +42,7 @@ def index():
     """Show portfolio of stocks"""
 
     # Get stocks data for current user
-    stocks = db.execute("SELECT stocks.shares, companies.symbol, companies.name FROM stocks INNER JOIN companies ON stocks.symbolid = companies.id WHERE stocks.userid = ? GROUP BY companies.symbol", session.get("user_id"))
+    stocks = db.execute("SELECT stocks.shares, companies.symbol, companies.name FROM stocks INNER JOIN companies ON stocks.symbolid = companies.id WHERE stocks.userid = ? ORDER BY companies.symbol", session.get("user_id"))
 
     # Get cash ammount
     row = db.execute("SELECT cash FROM users WHERE id = ?", session.get("user_id"))
@@ -149,7 +149,12 @@ def buy():
 @login_required
 def history():
     """Show history of transactions"""
-    return apology("TODO")
+
+    # Request database for history of operrations
+    history = db.execute("SELECT history.shares, history.price, history.time, companies.symbol FROM history INNER JOIN companies ON history.symbolid = companies.id WHERE history.userid = ? ORDER BY history.time DESC", session.get("user_id"))
+
+    #Render history of operations
+    return render_template("history.html", history=history)
 
 
 @app.route("/login", methods=["GET", "POST"])
