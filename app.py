@@ -77,7 +77,7 @@ def buy():
             return apology("You dont have enough cash", 403)
 
         # Check stock symbol and ammount of shares
-        checkStock = db.execute("SELECT shares FROM stocks WHERE id = ? AND symbolid = (SELECT symbol)", session.get("user_id"))
+        checkStock = db.execute("SELECT shares FROM stocks WHERE id = ? AND symbolid = ["SELECT id FROM companies WHERE symbol = ?", quote["symbol"]], session.get("user_id"))
 
         # Add shares to the users stock or create new position if it doesnt exist
         if len(checkStock) == 1 and checkStock[0]["symbol"] == quote["symbol"]:
