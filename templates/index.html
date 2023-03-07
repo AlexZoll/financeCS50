@@ -2,7 +2,7 @@
 
 {% block main %}
 
-    {% if quote %}
+    {% if stock %}
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -20,13 +20,13 @@
             <tbody>
                 <tr>
                     <td>
-                        {{ quote.symbol }}
+                        {{ stock.symbol }}
                     </td>
                     <td>
-                        {{ quote.name }}
+                        {{ stock.name }}
                     </td>
                     <td>
-                        {{ quote.price | usd }}
+                        {{ stock.price | usd }}
                     </td>
                 </tr>
             </tbody>
