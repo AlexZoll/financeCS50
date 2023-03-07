@@ -1,32 +1,36 @@
 {% extends "layout.html" %}
 
 {% block main %}
-    <table>
-        <thead>
-            <tr>
-                <th>
-                    Symbol
-                </th>
-                <th>
-                    Name
-                </th>
-                <th>
-                    Price
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <th>
-                    {{ quote.symbol }}
-                </th>
-                <th>
-                    {{ quote.name }}
-                </th>
-                <th>
-                    {{ quote.price | usd }}
-                </th>
-            </tr>
-        </tbody>
-    </table>
+
+    {% if quote %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        Symbol
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Price
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {{ quote.symbol }}
+                    </td>
+                    <td>
+                        {{ quote.name }}
+                    </td>
+                    <td>
+                        {{ quote.price | usd }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    {% endif %}
+
 {% endblock %}

@@ -47,7 +47,57 @@ def index():
 @login_required
 def buy():
     """Buy shares of stock"""
-    return apology("TODO")
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # Ensure symbol was submitted
+        if not request.form.get("symbol"):
+            return apology("must provide symbol", 403)
+
+        # Ensure shares were submitted as a positive integer
+        elif not request.form.get("shares") or int(request.form.get("shares")) <= 0:
+            return apology("must provide shares as a positive integer", 403)
+
+        # Send request to the iexpis.com to get quote
+        quote = lookup(request.form.get("symbol"))
+
+        #Ensure response exists
+        if quote == None:
+            return apology("Invalid symbol", 403)
+
+        # Check amount of cash
+        cash = db.execute("SELECT cash FROM users WHERE id = ?", session.get("user_id"))
+
+        #Count total price
+        totalPrice = quote["price"] * int(request.form.get("shares"))
+
+        # Ensure user have enough cash
+        if len(cash) != 1 or cash[0]["cash"] < totalPrice:
+            return apology("You dont have enough cash", 403)
+
+        # Check stock symbol and ammount of shares
+        checkStock = db.execute("SELECT symbol, shares FROM stocks WHERE id = ?", session.get("user_id"))
+
+        # Add shares to the users stock or create new position if it doesnt exist
+        if len(checkStock) == 1 and checkStock[0]["symbol"] == quote["symbol"]:
+            db.execute("UPDATE stocks SET shares = ? WHERE userid = ? AND symbol = ?", int(request.form.get("shares")) + checkStock[0]["shares"], session.get("user_id"), quote["symbol"])
+        else:
+            db.execute("INSERT INTO stocks (symbol, shares, userid) VALUES (?, ?, ?)", quote["symbol"], int(request.form.get("shares")), session.get("user_id"))
+
+        # Debit a cash account
+        db.execute("UPDATE users SET cash = ? WHERE id = ?", cash[0]["cash"] - totalPrice, session.get("user_id"))
+
+        # Add note in history
+        db.execute("INSERT INTO history (operation, symbol, shares, userid) VALUES (?, ?, ?, ?)", "buy", quote["symbol"], int(request.form.get("shares")), session.get("user_id"))
+
+        # Redirect user to home page
+        flash("You've successfully purchased!")
+        return redirect("/")
+
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("buy.html")
 
 
 @app.route("/history")
@@ -120,7 +170,7 @@ def quote():
             return apology("Invalid symbol", 403)
 
         # render response
-        return render_template("quoted.html", quote=quote)
+        return render_template("quote.html", quote=quote)
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
@@ -150,7 +200,7 @@ def register():
             return apology("passwords do not match", 403)
 
         # Query database for username
-        rows = db.execute("SELECT DISTINCT username FROM users WHERE username = ?", request.form.get("username"))
+        rows = db.execute("SELECT username FROM users WHERE username = ?", request.form.get("username"))
 
         # Ensure username didn't already exists
         if len(rows) != 0 and rows[0]["username"] == request.form.get("username"):
@@ -161,7 +211,7 @@ def register():
             "username"), generate_password_hash(request.form.get("password")))
 
         # Redirect user to login page with success message
-        flash("You are successfully registered")
+        flash("You are successfully registered!")
         return render_template("login.html")
 
     else:
