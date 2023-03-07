@@ -76,23 +76,36 @@ def buy():
         if len(cash) != 1 or cash[0]["cash"] < totalPrice:
             return apology("You dont have enough cash", 403)
 
-        # Check stock symbol and ammount of shares
-        checkStock = db.execute("SELECT symbol, shares FROM stocks WHERE id = ?", session.get("user_id"))
+        # Check stock symbol
+        checkSymbol = db.execute("SELECT id FROM companies WHERE symbol = ?", quote["symbol"])
 
-        # Add shares to the users stock or create new position if it doesnt exist
-        if len(checkStock) == 1 and checkStock[0]["symbol"] == quote["symbol"]:
-            db.execute("UPDATE stocks SET shares = ? WHERE userid = ? AND symbol = ?", int(request.form.get("shares")) + checkStock[0]["shares"], session.get("user_id"), quote["symbol"])
+        # Create new company in database if it doesnt exist
+        if len(checkSymbol) != 1:
+            db.execute("INSERT INTO companies (symbol, name) VALUES (?, ?)", quote["symbol"], quote["name"])
+            checkSymbol = db.execute("SELECT id FROM companies WHERE symbol = ?", quote["symbol"])
+
+        # Check ammount of shares
+        checkStock = db.execute("SELECT shares FROM stocks WHERE symbolid = ? AND userid = ?", checkSymbol[0]["id"], session.get("user_id"))
+
+        # Create new position in stocks if it doesnt exist for this user
+        if len(checkStock) != 1:
+            db.execute("INSERT INTO stocks (symbolid, shares, userid) VALUES (?, ?, ?)", checkSymbol[0]["id"], int(
+                    request.form.get("shares")), session.get("user_id"))
+
+        # Add shares to the users stock
         else:
-            db.execute("INSERT INTO stocks (symbol, shares, userid) VALUES (?, ?, ?)", quote["symbol"], int(request.form.get("shares")), session.get("user_id"))
+            db.execute("UPDATE stocks SET shares = ? WHERE userid = ? AND symbolid = ?", int(
+                request.form.get("shares")) + checkStock[0]["shares"], session.get("user_id"), checkSymbol[0]["id"])
 
         # Debit a cash account
         db.execute("UPDATE users SET cash = ? WHERE id = ?", cash[0]["cash"] - totalPrice, session.get("user_id"))
 
         # Add note in history
-        db.execute("INSERT INTO history (operation, symbol, shares, userid) VALUES (?, ?, ?, ?)", "buy", quote["symbol"], int(request.form.get("shares")), session.get("user_id"))
+        db.execute("INSERT INTO history (symbolid, shares, price, userid) VALUES (?, ?, ?, ?)", checkSymbol[0]["id"], str(
+            "+" + request.form.get("shares")), quote["price"], session.get("user_id"))
 
         # Redirect user to home page
-        flash("You've successfully purchased!")
+        flash("You made a successful purchase!")
         return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
