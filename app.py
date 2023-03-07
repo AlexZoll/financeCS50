@@ -76,15 +76,18 @@ def buy():
         if len(cash) != 1 or cash[0]["cash"] < totalPrice:
             return apology("You dont have enough cash", 403)
 
-        # Check stock symbol and ammount of shares
+        # Check stock symbol
         checkSymbol = db.execute("SELECT id FROM companies WHERE symbol = ?", quote["symbol"])
-        checkStock = db.execute("SELECT shares FROM stocks WHERE symbolid = ? AND userid = ?", checkSymbol[0]["id"], session.get("user_id"))
 
-        # Create new position if it doesnt exist
+        # Create new company in database if it doesnt exist
         if len(checkSymbol) != 1:
             db.execute("INSERT INTO companies (symbol, name) VALUES (?, ?)", quote["symbol"], quote["name"])
             checkSymbol = db.execute("SELECT id FROM companies WHERE symbol = ?", quote["symbol"])
 
+        # Check ammount of shares
+        checkStock = db.execute("SELECT shares FROM stocks WHERE symbolid = ? AND userid = ?", checkSymbol[0]["id"], session.get("user_id"))
+
+        # Create new position in stocks if it doesnt exist for this user
         if len(checkStock) != 1:
             db.execute("INSERT INTO stocks (symbolid, shares, userid) VALUES (?, ?, ?)", checkSymbol[0]["id"], int(
                     request.form.get("shares")), session.get("user_id"))
@@ -102,7 +105,7 @@ def buy():
             "+" + request.form.get("shares")), quote["price"], session.get("user_id"))
 
         # Redirect user to home page
-        flash("You've successfully purchased!")
+        flash("You made a successful purchase!")
         return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
