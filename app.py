@@ -40,7 +40,36 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    return apology("TODO")
+
+    # Get stocks data for current user
+    stocks = db.execute("SELECT stocks.shares, companies.symbol, companies.name FROM stocks INNER JOIN companies ON stocks.symbolid = companies.id WHERE stocks.userid = ? GROUP BY companies.symbol", session.get("user_id"))
+
+    # Get cash ammount
+    row = db.execute("SELECT cash FROM users WHERE id = ?", session.get("user_id"))
+    cash = row[0]["cash"]
+
+    # Sum cash and stocks value further
+    totalCash = cash
+
+    # Get current price for each stock
+    for stock in stocks:
+        quote = lookup(stock["symbol"])
+
+        # Ensure response exists
+        if quote == None:
+            return apology("Can't get actual price", 500)
+
+        # Add stock price into the list
+        stock["price"] = quote["price"]
+
+        # Sum stock value
+        stock["value"] = stock["price"] * stock["shares"]
+
+        # Add to total cash
+        totalCash += stock["value"]
+
+    #Render users stock list
+    return render_template("index.html", stocks=stocks, cash=cash, totalCash=totalCash)
 
 
 @app.route("/buy", methods=["GET", "POST"])

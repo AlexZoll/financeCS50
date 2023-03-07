@@ -1,8 +1,12 @@
 {% extends "layout.html" %}
 
+{% block title %}
+    Portfolio
+{% endblock %}
+
 {% block main %}
 
-    {% if stock %}
+    {% if stocks %}
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -13,11 +17,18 @@
                         Name
                     </th>
                     <th>
+                        Shares
+                    </th>
+                    <th>
                         Price
+                    </th>
+                    <th>
+                        Total
                     </th>
                 </tr>
             </thead>
             <tbody>
+                {% for stock in stocks %}
                 <tr>
                     <td>
                         {{ stock.symbol }}
@@ -26,8 +37,29 @@
                         {{ stock.name }}
                     </td>
                     <td>
+                        {{ stock.shares }}
+                    </td>
+                    <td>
                         {{ stock.price | usd }}
                     </td>
+                    <td>
+                        {{ stock.value | usd}}
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Cash</td>
+                    <td>{{ cash | usd}}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>TOTAL</td>
+                    <td>{{ totalCash | usd}}</td>
                 </tr>
             </tbody>
         </table>
