@@ -51,8 +51,10 @@ def index():
     # Sum cash and stocks value further
     totalCash = cash
 
-    # Get current price for each stock
+    # Collect data for every stock user owns
     for stock in stocks:
+
+        # Get current price for each stock
         quote = lookup(stock["symbol"])
 
         # Ensure response exists
@@ -68,7 +70,7 @@ def index():
         # Add to total cash
         totalCash += stock["value"]
 
-    #Render users stock list
+    # Render users stock list
     return render_template("index.html", stocks=stocks, cash=cash, totalCash=totalCash)
 
 
@@ -91,14 +93,14 @@ def buy():
         # Send request to the iexpis.com to get quote
         quote = lookup(request.form.get("symbol"))
 
-        #Ensure response exists
+        # Ensure response exists
         if quote == None:
             return apology("Invalid symbol", 403)
 
         # Check amount of cash
         cash = db.execute("SELECT cash FROM users WHERE id = ?", session.get("user_id"))
 
-        #Count total price
+        # Count total price
         totalPrice = quote["price"] * int(request.form.get("shares"))
 
         # Ensure user have enough cash
@@ -114,12 +116,13 @@ def buy():
             checkSymbol = db.execute("SELECT id FROM companies WHERE symbol = ?", quote["symbol"])
 
         # Check ammount of shares
-        checkStock = db.execute("SELECT shares FROM stocks WHERE symbolid = ? AND userid = ?", checkSymbol[0]["id"], session.get("user_id"))
+        checkStock = db.execute("SELECT shares FROM stocks WHERE symbolid = ? AND userid = ?",
+            checkSymbol[0]["id"], session.get("user_id"))
 
         # Create new position in stocks if it doesnt exist for this user
         if len(checkStock) != 1:
             db.execute("INSERT INTO stocks (symbolid, shares, userid) VALUES (?, ?, ?)", checkSymbol[0]["id"], int(
-                    request.form.get("shares")), session.get("user_id"))
+                request.form.get("shares")), session.get("user_id"))
 
         # Add shares to the users stock
         else:
@@ -131,7 +134,7 @@ def buy():
 
         # Add note in history
         db.execute("INSERT INTO history (symbolid, shares, price, userid) VALUES (?, ?, ?, ?)", checkSymbol[0]["id"], str(
-            "+" + request.form.get("shares")), quote["price"], session.get("user_id"))
+            "+" + request.form.get("shares")), totalPrice, session.get("user_id"))
 
         # Redirect user to home page
         flash("You made a successful purchase!")
@@ -207,7 +210,7 @@ def quote():
         # Send request to the iexpis.com to get quote
         quote = lookup(request.form.get("symbol"))
 
-        #Ensure response exists
+        # Ensure response exists
         if quote == None:
             return apology("Invalid symbol", 403)
 
@@ -264,4 +267,62 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
-    return apology("TODO")
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # Ensure symbol was submitted
+        if not request.form.get("symbol"):
+            return apology("must provide symbol", 403)
+
+        # Ensure shares were submitted as a positive integer
+        elif not request.form.get("shares") or int(request.form.get("shares")) <= 0:
+            return apology("must provide shares as a positive integer", 403)
+
+        # Send request to the iexpis.com to get quote
+        quote = lookup(request.form.get("symbol"))
+
+        # Ensure response exists
+        if quote == None:
+            return apology("Invalid symbol", 403)
+
+        # Check stock symbol to ensure it exists in database
+        checkSymbol = db.execute("SELECT id FROM companies WHERE symbol = ?", quote["symbol"])
+
+        if len(checkSymbol) != 1:
+            return apology("You don't own this stock")
+
+        # Ensure user does own this stock with that many shares
+        checkStock = db.execute("SELECT shares FROM stocks WHERE userid = ? AND symbolid = ?",
+            session.get("user_id"), checkSymbol[0]["id"])
+
+        if len(checkStock) != 1:
+            return apology("You don't own this stock")
+
+        elif checkStock[0]["shares"] < int(request.form.get("shares")):
+            return apology("You don't own this many shares")
+
+        # Count total price
+        totalPrice = quote["price"] * int(request.form.get("shares"))
+
+        # Check amount of cash
+        cash = db.execute("SELECT cash FROM users WHERE id = ?", session.get("user_id"))
+
+        # Remove shares from users stock
+        db.execute("UPDATE stocks SET shares = ? WHERE userid = ? AND symbolid = ?", checkStock[0]["shares"] - int(
+            request.form.get("shares")), session.get("user_id"), checkSymbol[0]["id"])
+
+        # Credit a cash account
+        db.execute("UPDATE users SET cash = ? WHERE id = ?", cash[0]["cash"] + totalPrice, session.get("user_id"))
+
+        # Add note in history
+        db.execute("INSERT INTO history (symbolid, shares, price, userid) VALUES (?, ?, ?, ?)", checkSymbol[0]["id"], str(
+            "-" + request.form.get("shares")), totalPrice, session.get("user_id"))
+
+        # Redirect user to home page
+        flash("You made a successful sell!")
+        return redirect("/")
+
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("sell.html")
