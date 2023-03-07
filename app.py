@@ -74,8 +74,7 @@ def buy():
 
         # Ensure user have enough cash
         if len(cash) != 1 or cash[0]["cash"] < totalPrice:
-            flash("You dont have enough cash")
-            return redirect ("/")
+            return apology("You dont have enough cash", 403)
 
         # Check stock symbol and ammount of shares
         checkStock = db.execute("SELECT symbol, shares FROM stocks WHERE id = ?", session.get("user_id"))
