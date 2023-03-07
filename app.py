@@ -80,19 +80,25 @@ def buy():
         checkSymbol = db.execute("SELECT id FROM companies WHERE symbol = ?", quote["symbol"])
         checkStock = db.execute("SELECT shares FROM stocks WHERE symbolid = ? AND userid = ?", checkSymbol[0]["id"], session.get("user_id"))
 
-        # Add shares to the users stock or create new position if it doesnt exist
-        if len(checkSymbol) == 1:
-            if len(checkStock) == 1:
-                db.execute("UPDATE stocks SET shares = ? WHERE userid = ? AND symbolid = ?", int(
+        # Create new position if it doesnt exist
+        if len(checkSymbol) != 1:
+            db.execute("INSERT INTO companies (symbol, name) VALUES (?, ?)", quote["symbol"], quote["name"])
+            checkSymbol = db.execute("SELECT id FROM companies WHERE symbol = ?", quote["symbol"])
+
+        if len(checkStock) != 1:
+            db.execute("INSERT INTO stocks (symbolid, shares, userid) VALUES (?, ?, ?)", checkSymbol[0]["id"], int(
+                    request.form.get("shares")), session.get("user_id"))
+
+        # Add shares to the users stock
+        else:
+            db.execute("UPDATE stocks SET shares = ? WHERE userid = ? AND symbolid = ?", int(
                     request.form.get("shares")) + checkStock[0]["shares"], session.get("user_id"), checkSymbol[0["id"]])
-            else:
-            db.execute("INSERT INTO stocks (symbol, shares, userid) VALUES (?, ?, ?)", quote["symbol"], int(request.form.get("shares")), session.get("user_id"))
 
         # Debit a cash account
         db.execute("UPDATE users SET cash = ? WHERE id = ?", cash[0]["cash"] - totalPrice, session.get("user_id"))
 
         # Add note in history
-        db.execute("INSERT INTO history (operation, symbol, shares, userid) VALUES (?, ?, ?, ?)", "buy", quote["symbol"], int(request.form.get("shares")), session.get("user_id"))
+        db.execute("INSERT INTO history (symbolid, shares, price, userid) VALUES (?, ?, ?, ?)", checkSymbol["id"], int(request.form.get("shares")), session.get("user_id"))
 
         # Redirect user to home page
         flash("You've successfully purchased!")
