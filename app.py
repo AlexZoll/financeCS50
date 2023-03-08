@@ -42,7 +42,7 @@ def index():
     """Show portfolio of stocks"""
 
     # Get stocks data for current user
-    stocks = db.execute("SELECT stocks.shares, companies.symbol, companies.name FROM stocks INNER JOIN companies ON stocks.symbolid = companies.id WHERE stocks.userid = ? ORDER BY companies.symbol", session.get("user_id"))
+    stocks = db.execute("SELECT stocks.shares, companies.symbol, companies.name FROM stocks INNER JOIN companies ON stocks.symbolid = companies.id WHERE stocks.userid = ? ORDER     BY companies.symbol", session.get("user_id"))
 
     # Get cash ammount
     row = db.execute("SELECT cash FROM users WHERE id = ?", session.get("user_id"))
@@ -72,6 +72,65 @@ def index():
 
     # Render users stock list
     return render_template("index.html", stocks=stocks, cash=cash, totalCash=totalCash)
+
+
+@app.route("/add_cash", methods=["GET", "POST"])
+@login_required
+def add_cash():
+    """Add cash on user account"""
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        #Add cash
+        db.execute("UPDATE users SET cash = ? WHERE id = ?", 10000, session.get("user_id"))
+
+        return redirect("/")
+
+    # User reached route via GET
+    else:
+        return redirect("/")
+
+
+@app.route("/change_password", methods=["GET", "POST"])
+@login_required
+def change_password():
+    """Change password of users account"""
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # Ensure  current password was submitted
+        if not request.form.get("password"):
+            return apology("must provide current password", 403)
+
+        # Ensure new password was submitted
+        elif not request.form.get("new_password") or not request.form.get("confirmation"):
+            return apology("must provide new password", 403)
+
+        # Ensure passwords input is match
+        elif request.form.get("new_password") != request.form.get("confirmation"):
+            return apology("new passwords do not match", 403)
+
+        # Check current password
+        password = db.execute("SELECT hash FROM users WHERE id = ?", session.get("user_id"))
+        if len(password) !=1 or not check_password_hash(password[0]["hash"], request.form.get("password")):
+            return apology("Invalid password", 403)
+
+        # Check new password do not match with current one
+        elif request.form.get("password") == request.form.get("new_password"):
+            return apology("New password shouldn't match with old one", 403)
+
+        # Change password in database
+        db.execute("UPDATE users SET hash = ? WHERE id = ?", generate_password_hash(request.form.get("new_password")), session.get("user_id"))
+
+        # Reditect user to home page
+        flash("You successfully changed the password!")
+        return redirect("/")
+
+    # User reached route via GET
+    else:
+        return render_template("change_password.html")
 
 
 @app.route("/buy", methods=["GET", "POST"])

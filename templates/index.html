@@ -25,6 +25,7 @@
                     <th>
                         Total
                     </th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -45,6 +46,24 @@
                     <td>
                         {{ stock.value | usd}}
                     </td>
+                    <td>
+                        <form action="/buy" method="post" >
+                            <input name="symbol" value="{{ stock.symbol }}" type="hidden">
+                            <div class="mb-3">
+                                <input autocomplete="off" class="form-control mx-auto w-auto" name="shares" placeholder="Shares" type="text">
+                            </div>
+                            <button class="btn btn-primary" type="submit">Buy</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form action="/sell" method="post" >
+                            <input name="symbol" value="{{ stock.symbol }}" type="hidden">
+                            <div class="mb-3">
+                                <input autocomplete="off" class="form-control mx-auto w-auto" name="shares" placeholder="Shares" type="text">
+                            </div>
+                            <button class="btn btn-primary" type="submit">Sell</button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
                 <tr>
@@ -53,6 +72,12 @@
                     <td></td>
                     <td>Cash</td>
                     <td>{{ cash | usd}}</td>
+                    <td>
+                        <form action="/add_cash" method="post" >
+                            <button class="btn btn-primary" type="submit">Add cash</button>
+                        </form>
+                    </td>
+                    <td></td>
                 </tr>
                 <tr>
                     <td></td>
@@ -60,6 +85,8 @@
                     <td></td>
                     <td>TOTAL</td>
                     <td>{{ totalCash | usd}}</td>
+                    <td></td>
+                    <td></td>
                 </tr>
             </tbody>
         </table>

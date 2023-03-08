@@ -7,7 +7,7 @@
 {% block main %}
 
     {% if history %}
-        <table class="table table-striped">
+        <table class="table">
             <thead>
                 <tr>
                     <th>
@@ -30,19 +30,26 @@
 
             <tbody>
                 {% for row in history %}
-                    <tr>
-                        <td>{{ row.symbol }}</td>
 
-                        {% if row.shares > 0 %}
-                            <td>Bought</td>
-                        {% else %}
-                            <td>Sold</td>
-                        {% endif %}
+                    {% if row.shares > 0 %}
+                        <tr class="table-success">
+                    {% else %}
+                        <tr class="table-danger">
+                    {% endif %}
 
-                        <td>{{ row.shares }}</td>
-                        <td>{{ row.price | usd }}</td>
-                        <td>{{ row.time }}</td>
-                    </tr>
+                            <td>{{ row.symbol }}</td>
+
+                            {% if row.shares > 0 %}
+                                <td>Bought</td>
+                            {% else %}
+                                <td>Sold</td>
+                            {% endif %}
+
+                            <td>{{ row.shares }}</td>
+                            <td>{{ row.price | usd }}</td>
+                            <td>{{ row.time }}</td>
+                        </tr>
+
                 {% endfor %}
             </tbody>
         </table>
