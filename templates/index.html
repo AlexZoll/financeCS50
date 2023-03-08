@@ -6,90 +6,113 @@
 
 {% block main %}
 
-    {% if stocks %}
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>
-                        Symbol
-                    </th>
-                    <th>
-                        Name
-                    </th>
-                    <th>
-                        Shares
-                    </th>
-                    <th>
-                        Price
-                    </th>
-                    <th>
-                        Total
-                    </th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for stock in stocks %}
-                <tr>
-                    <td>
-                        {{ stock.symbol }}
-                    </td>
-                    <td>
-                        {{ stock.name }}
-                    </td>
-                    <td>
-                        {{ stock.shares }}
-                    </td>
-                    <td>
-                        {{ stock.price | usd }}
-                    </td>
-                    <td>
-                        {{ stock.value | usd}}
-                    </td>
-                    <td>
-                        <form action="/buy" method="post" >
-                            <input name="symbol" value="{{ stock.symbol }}" type="hidden">
-                            <div class="mb-3">
-                                <input autocomplete="off" class="form-control mx-auto w-auto" name="shares" placeholder="Shares" type="text">
-                            </div>
-                            <button class="btn btn-primary" type="submit">Buy</button>
-                        </form>
-                    </td>
-                    <td>
-                        <form action="/sell" method="post" >
-                            <input name="symbol" value="{{ stock.symbol }}" type="hidden">
-                            <div class="mb-3">
-                                <input autocomplete="off" class="form-control mx-auto w-auto" name="shares" placeholder="Shares" type="text">
-                            </div>
-                            <button class="btn btn-primary" type="submit">Sell</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>Cash</td>
-                    <td>{{ cash | usd}}</td>
-                    <td>
-                        <form action="/add_cash" method="post" >
-                            <button class="btn btn-primary" type="submit">Add cash</button>
-                        </form>
-                    </td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>TOTAL</td>
-                    <td>{{ totalCash | usd}}</td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-    {% endif %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                    Symbol
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Shares
+                </th>
+                <th>
+                    Price
+                </th>
+                <th>
+                    Total
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+
+        {% if stocks %}
+        <tbody>
+            {% for stock in stocks %}
+
+            {% if stock.shares %}
+            <tr>
+                <td>
+                    {{ stock.symbol }}
+                </td>
+                <td>
+                    {{ stock.name }}
+                </td>
+                <td>
+                    {{ stock.shares }}
+                </td>
+                <td>
+                    {{ stock.price | usd }}
+                </td>
+                <td>
+                    {{ stock.value | usd}}
+                </td>
+                <td class="col col-lg-2">
+                    <form action="/buy" class="input-group" method="post" >
+                        <button class="btn btn-primary" type="submit">Buy</button>
+                        <input name="symbol" value="{{ stock.symbol }}" type="hidden">
+                        <input autocomplete="off" class="form-control" name="shares" placeholder="Shares" type="text">
+                        <button class="btn btn-primary" formaction="/sell" type="submit">Sell</button>
+                    </form>
+                </td>
+            </tr>
+            {% endif %}
+
+            {% endfor %}
+
+            {% endif %}
+            <tr>
+                <td class="fw-bold text-end" colspan="4">Cash</td>
+                <td>{{ cash | usd}}</td>
+                <td>
+                    <form action="/add_cash" method="post" >
+                        <button class="btn btn-primary" type="submit">Add cash</button>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td class="fw-bold text-end" colspan="4">TOTAL</td>
+                <td>{{ totalCash | usd}}</td>
+                <td></td>
+            </tr>
+
+            {% if stocks %}
+            <tr>
+                <td class="border-0 fw-bold pt-5" colspan="6"></td>
+            </tr>
+            {% for stock in stocks %}
+
+            {% if not stock.shares %}
+            <tr>
+                <td>
+                    {{ stock.symbol }}
+                </td>
+                <td>
+                    {{ stock.name }}
+                </td>
+                <td>
+                    {{ stock.shares }}
+                </td>
+                <td>
+                    {{ stock.price | usd }}
+                </td>
+                <td></td>
+                <td class="col col-lg-2">
+                    <form action="/buy" class="input-group" method="post" >
+                        <button class="btn btn-primary" type="submit">Buy</button>
+                        <input name="symbol" value="{{ stock.symbol }}" type="hidden">
+                        <input autocomplete="off" class="form-control" name="shares" placeholder="Shares" type="text">
+                    </form>
+                </td>
+            </tr>
+            {% endif %}
+
+            {% endfor %}
+
+            {% endif %}
+        </tbody>
+    </table>
 
 {% endblock %}

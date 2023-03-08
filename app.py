@@ -42,7 +42,7 @@ def index():
     """Show portfolio of stocks"""
 
     # Get stocks data for current user
-    stocks = db.execute("SELECT stocks.shares, companies.symbol, companies.name FROM stocks INNER JOIN companies ON stocks.symbolid = companies.id WHERE stocks.userid = ? ORDER     BY companies.symbol", session.get("user_id"))
+    stocks = db.execute("SELECT stocks.shares, companies.symbol, companies.name FROM stocks INNER JOIN companies ON stocks.symbolid = companies.id WHERE stocks.userid = ? ORDER BY companies.symbol", session.get("user_id"))
 
     # Get cash ammount
     row = db.execute("SELECT cash FROM users WHERE id = ?", session.get("user_id"))
