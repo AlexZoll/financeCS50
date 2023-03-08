@@ -6,7 +6,7 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, lookup, usd
+from helpers import apology, isPositiveInteger, login_required, lookup, usd
 
 # Configure application
 app = Flask(__name__)
@@ -82,7 +82,7 @@ def add_cash():
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        #Add cash
+        # Add cash
         db.execute("UPDATE users SET cash = ? WHERE id = ?", 10000, session.get("user_id"))
 
         return redirect("/")
@@ -114,7 +114,7 @@ def change_password():
 
         # Check current password
         password = db.execute("SELECT hash FROM users WHERE id = ?", session.get("user_id"))
-        if len(password) !=1 or not check_password_hash(password[0]["hash"], request.form.get("password")):
+        if len(password) != 1 or not check_password_hash(password[0]["hash"], request.form.get("password")):
             return apology("Invalid password", 403)
 
         # Check new password do not match with current one
@@ -122,7 +122,8 @@ def change_password():
             return apology("New password shouldn't match with old one", 403)
 
         # Change password in database
-        db.execute("UPDATE users SET hash = ? WHERE id = ?", generate_password_hash(request.form.get("new_password")), session.get("user_id"))
+        db.execute("UPDATE users SET hash = ? WHERE id = ?", generate_password_hash(
+            request.form.get("new_password")), session.get("user_id"))
 
         # Reditect user to home page
         flash("You successfully changed the password!")
@@ -145,8 +146,12 @@ def buy():
         if not request.form.get("symbol"):
             return apology("must provide symbol", 403)
 
-        # Ensure shares were submitted as a positive integer
-        elif not request.form.get("shares") or int(request.form.get("shares")) <= 0:
+        # Ensure shares were submitted
+        elif not request.form.get("shares"):
+            return apology("must provide shares", 403)
+
+        # Ensure shares is a positive integer
+        if not isPositiveInteger(request.form.get("shares")):
             return apology("must provide shares as a positive integer", 403)
 
         # Send request to the iexpis.com to get quote
@@ -192,8 +197,8 @@ def buy():
         db.execute("UPDATE users SET cash = ? WHERE id = ?", cash[0]["cash"] - totalPrice, session.get("user_id"))
 
         # Add note in history
-        db.execute("INSERT INTO history (symbolid, shares, price, userid) VALUES (?, ?, ?, ?)", checkSymbol[0]["id"], str(
-            "+" + request.form.get("shares")), totalPrice, session.get("user_id"))
+        db.execute("INSERT INTO history (symbolid, shares, price, userid) VALUES (?, ?, ?, ?)", checkSymbol[0]["id"], int(
+            request.form.get("shares")), totalPrice, session.get("user_id"))
 
         # Redirect user to home page
         flash("You made a successful purchase!")
@@ -212,7 +217,7 @@ def history():
     # Request database for history of operrations
     history = db.execute("SELECT history.shares, history.price, history.time, companies.symbol FROM history INNER JOIN companies ON history.symbolid = companies.id WHERE history.userid = ? ORDER BY history.time DESC", session.get("user_id"))
 
-    #Render history of operations
+    # Render history of operations
     return render_template("history.html", history=history)
 
 
@@ -339,8 +344,12 @@ def sell():
         if not request.form.get("symbol"):
             return apology("must provide symbol", 403)
 
-        # Ensure shares were submitted as a positive integer
-        elif not request.form.get("shares") or int(request.form.get("shares")) <= 0:
+        # Ensure shares were submitted
+        elif not request.form.get("shares"):
+            return apology("must provide shares", 403)
+
+        # Ensure shares is a positive integer
+        if not isPositiveInteger(request.form.get("shares")):
             return apology("must provide shares as a positive integer", 403)
 
         # Send request to the iexpis.com to get quote
@@ -380,11 +389,11 @@ def sell():
         db.execute("UPDATE users SET cash = ? WHERE id = ?", cash[0]["cash"] + totalPrice, session.get("user_id"))
 
         # Add note in history
-        db.execute("INSERT INTO history (symbolid, shares, price, userid) VALUES (?, ?, ?, ?)", checkSymbol[0]["id"], str(
-            "-" + request.form.get("shares")), totalPrice, session.get("user_id"))
+        db.execute("INSERT INTO history (symbolid, shares, price, userid) VALUES (?, ?, ?, ?)", checkSymbol[0]["id"], int(
+            request.form.get("shares")) * -1, totalPrice, session.get("user_id"))
 
         # Redirect user to home page
-        flash("You made a successful sell!")
+        flash("You sold successfully!")
         return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)

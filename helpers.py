@@ -21,6 +21,23 @@ def apology(message, code=400):
     return render_template("apology.html", top=code, bottom=escape(message)), code
 
 
+def isPositiveInteger(string):
+    """Check string type of data, return True if argument is a positive integer"""
+
+    # Create a list of digits
+    digits = list(i for i in range(10))
+
+    # Create a list of digits in string format
+    digitsString = [str(x) for x in digits]
+
+    # Check string for any characters, except digits
+    for char in string:
+        if char not in digitsString:
+            return False
+
+    return True
+
+
 def login_required(f):
     """
     Decorate routes to require login.
