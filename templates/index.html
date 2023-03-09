@@ -5,7 +5,6 @@
 {% endblock %}
 
 {% block main %}
-
     <table class="table table-striped">
         <thead>
             <tr>
@@ -27,12 +26,10 @@
                 <th></th>
             </tr>
         </thead>
-
+        
         {% if stocks %}
         <tbody>
             {% for stock in stocks %}
-
-            {% if stock.shares %}
             <tr>
                 <td>
                     {{ stock.symbol }}
@@ -58,8 +55,6 @@
                     </form>
                 </td>
             </tr>
-            {% endif %}
-
             {% endfor %}
 
             {% endif %}
@@ -77,42 +72,6 @@
                 <td>{{ totalCash | usd}}</td>
                 <td></td>
             </tr>
-
-            {% if stocks %}
-            <tr>
-                <td class="border-0 fw-bold pt-5" colspan="6"></td>
-            </tr>
-            {% for stock in stocks %}
-
-            {% if not stock.shares %}
-            <tr>
-                <td>
-                    {{ stock.symbol }}
-                </td>
-                <td>
-                    {{ stock.name }}
-                </td>
-                <td>
-                    {{ stock.shares }}
-                </td>
-                <td>
-                    {{ stock.price | usd }}
-                </td>
-                <td></td>
-                <td class="col col-lg-2">
-                    <form action="/buy" class="input-group" method="post" >
-                        <button class="btn btn-primary" type="submit">Buy</button>
-                        <input name="symbol" value="{{ stock.symbol }}" type="hidden">
-                        <input autocomplete="off" class="form-control" name="shares" placeholder="Shares" type="text">
-                    </form>
-                </td>
-            </tr>
-            {% endif %}
-
-            {% endfor %}
-
-            {% endif %}
         </tbody>
     </table>
-
 {% endblock %}

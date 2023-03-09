@@ -381,9 +381,14 @@ def sell():
         # Check amount of cash
         cash = db.execute("SELECT cash FROM users WHERE id = ?", session.get("user_id"))
 
-        # Remove shares from users stock
-        db.execute("UPDATE stocks SET shares = ? WHERE userid = ? AND symbolid = ?", checkStock[0]["shares"] - int(
-            request.form.get("shares")), session.get("user_id"), checkSymbol[0]["id"])
+        # Delete row in database if all shares sold
+        if checkStock[0]["shares"] == int(request.form.get("shares")):
+            db.execute("DELETE FROM stocks WHERE userid = ? AND symbolid = ?", session.get("user_id"), checkSymbol[0]["id"])
+
+        # Or update shares
+        else:
+            db.execute("UPDATE stocks SET shares = ? WHERE userid = ? AND symbolid = ?", checkStock[0]["shares"] - int(
+                request.form.get("shares")), session.get("user_id"), checkSymbol[0]["id"])
 
         # Credit a cash account
         db.execute("UPDATE users SET cash = ? WHERE id = ?", cash[0]["cash"] + totalPrice, session.get("user_id"))
