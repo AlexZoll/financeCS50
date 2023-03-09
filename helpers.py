@@ -21,21 +21,31 @@ def apology(message, code=400):
     return render_template("apology.html", top=code, bottom=escape(message)), code
 
 
-def isPositiveInteger(string):
-    """Check string type of data, return True if argument is a positive integer"""
+def check_password(password):
+    """Check if string is eligible to be a password, return True or False"""
 
-    # Create a list of digits
-    digits = list(i for i in range(1, 10))
+    # Set result to return
+    result = False
 
-    # Create a list of digits in string format
-    digitsString = [str(x) for x in digits]
+    # Create a list of special symbols
+    SYMBOLS = ["@", "#", "$", "%", "&","-", "_", "/"]
 
-    # Check string for any characters, except digits
-    for char in string:
-        if char not in digitsString:
-            return False
+    # Check password length
+    if not 8 <= len(password) <= 16:
+        return result
 
-    return True
+    # Check if password has at least one of each uppercase or lowercase letter
+    elif not any(char.isupper() for char  in password) and  not any(char.islower() for char in password):
+        return result
+
+    #Check is password has at least one special symbol
+    elif not any(char in SYMBOLS for char in password):
+        return result
+
+    # Return True if password is eligible
+    else:
+        result = True
+        return result
 
 
 def login_required(f):

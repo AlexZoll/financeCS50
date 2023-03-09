@@ -6,7 +6,7 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, isPositiveInteger, login_required, lookup, usd
+from helpers import apology, check_password, login_required, lookup, usd
 
 # Configure application
 app = Flask(__name__)
@@ -108,6 +108,11 @@ def change_password():
         elif not request.form.get("new_password") or not request.form.get("confirmation"):
             return apology("must provide new password", 403)
 
+        # Ensure password has all requires
+        elif not check_password(request.form.get("new_password")):
+            return apology("password must be from 8 to 16 characters long and consists of at least one digit, "
+                "one lowercase and uppercase letter and one of special symbols @#$%&-_/")
+
         # Ensure passwords input is match
         elif request.form.get("new_password") != request.form.get("confirmation"):
             return apology("new passwords do not match", 403)
@@ -127,7 +132,7 @@ def change_password():
 
         # Reditect user to home page
         flash("You successfully changed the password!")
-        return redirect("/")
+        return render_template("login.html")
 
     # User reached route via GET
     else:
@@ -151,7 +156,7 @@ def buy():
             return apology("must provide shares", 403)
 
         # Ensure shares is a positive integer
-        if not isPositiveInteger(request.form.get("shares")):
+        if not (request.form.get("shares")).isdigit() or int(request.form.get("shares")) == 0:
             return apology("must provide shares as a positive integer", 403)
 
         # Send request to the iexpis.com to get quote
@@ -309,6 +314,11 @@ def register():
         elif not request.form.get("password") or not request.form.get("confirmation"):
             return apology("must provide password", 403)
 
+        # Ensure password has all requires
+        elif not check_password(request.form.get("password")):
+            return apology("password must be from 8 to 16 characters long and consists of at least one digit, "
+                "one lowercase and uppercase letter and one of special symbols @#$%&-_/")
+
         # Ensure passwords input is match
         elif request.form.get("password") != request.form.get("confirmation"):
             return apology("passwords do not match", 403)
@@ -349,7 +359,7 @@ def sell():
             return apology("must provide shares", 403)
 
         # Ensure shares is a positive integer
-        if not isPositiveInteger(request.form.get("shares")):
+        if not (request.form.get("shares")).isdigit() or int(request.form.get("shares")) == 0:
             return apology("must provide shares as a positive integer", 403)
 
         # Send request to the iexpis.com to get quote
