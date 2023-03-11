@@ -26,16 +26,16 @@
                 <th></th>
             </tr>
         </thead>
-        
+
         {% if stocks %}
         <tbody>
             {% for stock in stocks %}
             <tr>
                 <td>
-                    {{ stock.symbol }}
+                    {{ stock.company.symbol }}
                 </td>
                 <td>
-                    {{ stock.name }}
+                    {{ stock.company.name }}
                 </td>
                 <td>
                     {{ stock.shares }}
@@ -49,7 +49,7 @@
                 <td class="col col-lg-2">
                     <form action="/buy" class="input-group" method="post" >
                         <button class="btn btn-primary" type="submit">Buy</button>
-                        <input name="symbol" value="{{ stock.symbol }}" type="hidden">
+                        <input name="symbol" value="{{ stock.company.symbol }}" type="hidden">
                         <input autocomplete="off" class="form-control" name="shares" placeholder="Shares" type="text">
                         <button class="btn btn-primary" formaction="/sell" type="submit">Sell</button>
                     </form>
