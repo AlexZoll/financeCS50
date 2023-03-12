@@ -47,10 +47,10 @@ def index():
     """Show portfolio of stocks"""
 
     # Get stocks data for current user
-    stocks = Stocks.query.filter_by(userid = session.get("user_id")).all()
+    stocks = Stocks.query.filter_by(userid=session.get("user_id")).all()
 
     # Get cash ammount
-    cash = Users.query.filter_by(id = session.get("user_id")).scalar()
+    cash = Users.query.filter_by(id=session.get("user_id")).scalar()
     if cash is None:
         return apology("Couldn't find a data", 403)
 
@@ -130,7 +130,7 @@ def buy():
             return apology("Invalid symbol", 403)
 
         # Check amount of cash
-        cash = Users.query.filter_by(id = session.get("user_id")).scalar()
+        cash = Users.query.filter_by(id=session.get("user_id")).scalar()
 
         # Count total price
         price = quote["price"] * int(request.form.get("shares"))
@@ -140,19 +140,19 @@ def buy():
             return apology("You dont have enough cash", 403)
 
         # Check stock symbol
-        symbol = Companies.query.filter_by(symbol = quote["symbol"]).scalar()
+        symbol = Companies.query.filter_by(symbol=quote["symbol"]).scalar()
 
         # Create new company in database if it doesnt exist
         if symbol is None:
-            newCompany = Companies(symbol = quote["symbol"], name = quote["name"])
+            newCompany = Companies(symbol=quote["symbol"], name=quote["name"])
             db.session.add(newCompany)
             db.session.flush()
 
             # Check stock symbol again after adding in database
-            symbol = Companies.query.filter_by(symbol = quote["symbol"]).scalar()
+            symbol = Companies.query.filter_by(symbol=quote["symbol"]).scalar()
 
         # Check ammount of shares
-        stock = Stocks.query.filter_by(userid = session.get("user_id"), symbolid = symbol.id).scalar()
+        stock = Stocks.query.filter_by(userid=session.get("user_id"), symbolid=symbol.id).scalar()
 
         # Create new position in stocks if it doesnt exist for this user
         if stock is None:
@@ -163,10 +163,10 @@ def buy():
             stock.shares = int(request.form.get("shares")) + stock.shares
 
         # Debit a cash account
-        cash.cash =  float(cash.cash) - price
+        cash.cash = float(cash.cash) - price
 
         # Add note in history
-        transaction = History(symbolid = symbol.id, shares = request.form.get("shares"), price = price, userid = session.get("user_id"))
+        transaction = History(symbolid=symbol.id, shares=request.form.get("shares"), price=price, userid=session.get("user_id"))
         db.session.add(transaction)
 
         # Apply changes and redirect user to home page
@@ -232,7 +232,7 @@ def history():
     """Show history of transactions"""
 
     # Request database for history of operrations
-    history = History.query.order_by(History.time.desc()).filter_by(userid = session.get("user_id")).all()
+    history = History.query.order_by(History.time.desc()).filter_by(userid=session.get("user_id")).all()
 
     # Render history of operations
     return render_template("history.html", history=history)
@@ -257,7 +257,7 @@ def login():
             return apology("must provide password", 403)
 
         # Query database for username
-        user = Users.query.filter_by(username = request.form.get("username")).scalar()
+        user = Users.query.filter_by(username=request.form.get("username")).scalar()
 
         # Ensure username exists and password is correct
         if user is None or not check_password_hash(user.hash, request.form.get("password")):
@@ -343,12 +343,12 @@ def register():
             return apology("username already exists", 403)
 
         # Add user to database
-        db.session.add(Users(username = request.form.get("username"), hash = generate_password_hash(request.form.get("password"))))
+        db.session.add(Users(username=request.form.get("username"), hash=generate_password_hash(request.form.get("password"))))
         db.session.commit()
 
         # Redirect user to login page with success message
         flash("You are successfully registered!")
-        return redirect ("/login")
+        return redirect("/login")
 
     else:
         return render_template("/register.html")
@@ -382,13 +382,13 @@ def sell():
             return apology("Invalid symbol", 403)
 
         # Check stock symbol to ensure it exists in database
-        symbol = Companies.query.filter_by(symbol = quote["symbol"]).scalar()
+        symbol = Companies.query.filter_by(symbol=quote["symbol"]).scalar()
 
         if symbol is None:
             return apology("You don't own this stock")
 
         # Ensure user does own this stock with that many shares
-        stock = Stocks.query.filter_by(userid = session.get("user_id"), symbolid = symbol.id).scalar()
+        stock = Stocks.query.filter_by(userid=session.get("user_id"), symbolid=symbol.id).scalar()
 
         if stock is None:
             return apology("You don't own this stock")
@@ -400,7 +400,7 @@ def sell():
         price = quote["price"] * int(request.form.get("shares"))
 
         # Check amount of cash
-        cash = Users.query.filter_by(id = session.get("user_id")).scalar()
+        cash = Users.query.filter_by(id=session.get("user_id")).scalar()
         if cash is None:
             return apology("You dont have enough cash", 403)
 
@@ -416,7 +416,8 @@ def sell():
         cash.cash = float(cash.cash) + price
 
         # Add note in history
-        transaction = History(symbolid = symbol.id, shares = int(request.form.get("shares")) * -1, price = price, userid = session.get("user_id"))
+        transaction = History(symbolid=symbol.id, shares=int(request.form.get("shares"))
+            * -1, price=price, userid=session.get("user_id"))
         db.session.add(transaction)
 
         # Apply changes and redirect user to home page
