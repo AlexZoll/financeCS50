@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    History
+{% endblock %}
+
+{% block main %}
+
+    {% if history %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Symbol
+                    </th>
+                    <th>
+                        Operation
+                    </th>
+                    <th>
+                        Shares
+                    </th>
+                    <th>
+                        Price
+                    </th>
+                    <th>
+                        Time
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in history %}
+
+                    {% if row.shares > 0 %}
+                        <tr class="table-success">
+                    {% else %}
+                        <tr class="table-danger">
+                    {% endif %}
+
+                            <td>{{ row.company.symbol }}</td>
+
+                            {% if row.shares > 0 %}
+                                <td>Bought</td>
+                                <td>+{{ row.shares }}</td>
+                            {% else %}
+                                <td>Sold</td>
+                                <td>{{ row.shares }}</td>
+                            {% endif %}
+
+                            <td>{{ row.price | usd }}</td>
+                            <td>{{ row.time }}</td>
+                        </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+{% endblock %}
