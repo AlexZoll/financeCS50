@@ -1,4 +1,5 @@
 # financeCS50
+### final problem set, a web application to "buy" and "sell" stocks.
 Before getting started you need to register for an API key in order to be able to query IEX’s data.
 Visit iexcloud.io/cloud-login#/register/.
 Once you’ve confirmed your account via a confirmation email, visit https://iexcloud.io/console/tokens.
